@@ -1,0 +1,29 @@
+{
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.1",
+    "init": "^0.1.2",
+    "moment": "^2.29.3",
+    "mongoose": "^6.4.0",
+    "nodemon": "^2.0.16"
+  },
+  "name": "blogproject",
+  "description": "",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarhan44/BlogProject.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sarhan44/BlogProject/issues"
+  },
+  "homepage": "https://github.com/sarhan44/BlogProject#readme"
+}

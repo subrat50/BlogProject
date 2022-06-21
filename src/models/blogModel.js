@@ -1,4 +1,5 @@
 const mongoose=require('mongoose')
+// const mongooseSoftDelete = require('mongoose-soft-delete')
 const ObjectId=mongoose.Schema.Types.ObjectId
 
 const blogSchema= new mongoose.Schema({
@@ -17,7 +18,7 @@ const blogSchema= new mongoose.Schema({
  },
   tags: [String],
   category: {
-    type:[String],
+    type: String,
     required:true
     },
    subcategory: [String], 
@@ -36,4 +37,5 @@ const blogSchema= new mongoose.Schema({
         default: false,
     }
 },{timestamps:true})
+
 module.exports=mongoose.model('Blog',blogSchema)

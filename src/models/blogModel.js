@@ -4,7 +4,9 @@ const ObjectId=mongoose.Schema.Types.ObjectId
 const blogSchema= new mongoose.Schema({
  title: {
     type:String,
+    unique:true,
     required:true
+    
 },
  body: {
     type:String,
@@ -17,7 +19,7 @@ const blogSchema= new mongoose.Schema({
  },
   tags: [String],
   category: {
-    type:[String],
+    type:String,
     required:true
     },
    subcategory: [String], 

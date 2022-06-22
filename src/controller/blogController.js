@@ -47,13 +47,6 @@ let getBlog = async function (req, res) {
 };
 
 
-
-
-
-
-
-
-
 // =====================[ delete Blogs]=====================
 let deleteById = async (req, res) => {
   try {

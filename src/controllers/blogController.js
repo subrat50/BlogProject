@@ -6,12 +6,31 @@ const authorModel = require("../models/authorModel");
 let createBlog = async function (req, res) {
   try {
     let data = req.body;
+    
+    let title = data.title;
+    if (!title) return res.status(400).send("title Is required");
+    if(!title== Number) return res.status(400).send("title must be valid")
 
     let authorId = data.authorId;
-    if (!authorId) return res.status(400).send("Author Id Is requaired");
+    if (!authorId) return res.status(400).send("Author Id Is required");
+
 
     let authorData = await authorModel.findById(authorId);
     if (!authorData) return res.status(404).send("Invalid Author Id");
+
+    let body = data.body;
+    if (!body) return res.status(400).send("body Is required");
+    if(body==String) return res.status(400).send("invalid body")
+    if(body===Number) return res.status(400).send("bhuu")
+
+    let tags = data.tags;
+    if (!tags) return res.status(400).send("tags Is required");
+
+    let category = data.category;
+    if (!category) return res.status(400).send("category Is required");
+
+    let subcategory = data.subcategory;
+    if (!subcategory) return res.status(400).send("subcategory Is required");
 
     let savedData = await blogModel.create(data);
     res.status(201).send({status: true,data: savedData,});
@@ -20,6 +39,7 @@ let createBlog = async function (req, res) {
     res.status(500).send({status: false,msg: err.message,});
   }
 };
+
 // ================[ get Blogs]============
 
 let getBlog = async function (req, res) {
@@ -101,8 +121,6 @@ let deleteByParam = async (req, res) => {
       {$set: {isDeleted: true, deletedAt: Date()}},
       {new: true}
     )
-      
-
     res.status(201).send({ status: true, data: updatedUser });
   } catch (err) {
     res.status(500).send({ status: false, msg: err.message });

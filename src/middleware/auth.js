@@ -31,11 +31,9 @@ const auth2 = async (req, res, next) => {
     try {
         let token = req.headers["x-api-key"];
         let decodedToken = jwt.verify(token, "Radon-project-1")
-        console.log(decodedToken.authorId)
-        console.log(req.body.authorId)
 
         if (decodedToken.authorId !== req.body.authorId)
-        return res.status(403).send({ status: false, msg: "author id or token does not match" })
+        return res.status(403).send({ status: false, msg: "author id does not match" })
     }
     catch (err) {
         res.status(500).send({ msg: "Error", error: err.message });
@@ -60,7 +58,7 @@ const authorise = async (req, res, next) => {
         res.status(500).send({ msg: "Error", error: err.message, });
     }
     next();
-};
+}
 
 // =====================[Exports]================
 

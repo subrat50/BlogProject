@@ -1,6 +1,7 @@
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+const blogModel = require("../models/blogModel");
 
-// =====================[authentication]================
+// ==+==+==+==+==+==+==+==+==+==[ Authentication ]==+==+==+==+==+==+==+==+==+==
 
 const authenticate = async (req, res, next) => {
     try {
@@ -25,7 +26,7 @@ const authenticate = async (req, res, next) => {
     next();
 };
 
-// ===============[check authorid or token is same or not for creating blogs]============
+// ==+==+==+==+==+==[ Check authorid or token is same or not for creating blogs ]==+==+==+==+==+==+
 
 const auth2 = async (req, res, next) => {
     try {
@@ -41,16 +42,18 @@ const auth2 = async (req, res, next) => {
     next();
 };
 
-// =====================[authorization for updating and deleting]================
+// ==+==+==+==+==+==+==+==+==+==[ Authorization for updating and deleting ]==+==+==+==+==+==+==+==+==+==
 
 const authorise = async (req, res, next) => {
     try {
         let token = req.headers["x-api-key"];
         let decodedToken = jwt.verify(token, "Radon-project-1");
         if (!decodedToken) return res.status(403).send({ status: false, msg: "token is invalid", });
+        let id = req.params.blogId
+        let findid = await blogModel.findById(id)
 
         let findauthorId = decodedToken.authorId;
-        let checkAuthor = req.params.blogId.authorId
+        let checkAuthor = findid.authorId.toString()
         if (checkAuthor !== findauthorId)
             return res.status(403).send({ status: false, msg: "User logged is not allowed to modify the requested users data", });
     }
@@ -60,7 +63,7 @@ const authorise = async (req, res, next) => {
     next();
 }
 
-// =====================[Exports]================
+ // ==+==+==+==[ Exports ]==+==+==+==+=
 
 module.exports.authenticate = authenticate;
 module.exports.auth2 = auth2;

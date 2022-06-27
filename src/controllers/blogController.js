@@ -145,7 +145,7 @@ let deleteByParam = async (req, res) => {
 
     let deleteData = await blogModel.find(data).updateMany(
       { $and: [data] },
-      { $set: { isDeleted: false, deletedAt: Date() } },
+      { $set: { isDeleted: true, deletedAt: Date() } },
       { new: true }
     );
 

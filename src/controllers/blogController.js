@@ -2,17 +2,25 @@
 
 const blogModel = require("../models/blogModel");
 const authorModel = require("../models/authorModel");
+const { default: mongoose, isValidObjectId } = require("mongoose");
 
 // ==+==+==+==[Validation Functions]==+==+==+==+=
 
 const isValid = function (value) {
   if (typeof value === "undefined" || value === null) return false;
   if (typeof value === "string" && value.trim().length === 0) return false;
+  if (typeof value === "string")
   return true;
 };
 
-const isValidBody = function (body) {
-  return Object.keys(body).length > 0
+const isvalidRequest=function(requestBody){
+  return Object.keys(requestBody).length >0
+}
+const valid = function (value) {
+  if(typeof value === "boolean") return true
+}
+const isValidAuthorId=function(ObjectId){
+return  mongoose.Types.ObjectId.isValid(ObjectId)
 }
 
 
@@ -20,9 +28,13 @@ const isValidBody = function (body) {
 
 let createBlog = async function (req, res) {
   try {
-    let data = req.body;
-    if (!isValidBody(data)) return res.status(400).send({ status: false, msg: "please provide data to Create" })
-    let { authorId, body, title, tags, category, subcategory } = data
+    const requestBody=req.body
+      if(!isvalidRequest(requestBody)){
+        return res.status(400).send({status:false,msg:"invalid request parameter ,please provied blog detail"})
+      }
+    // let  {title,authorId,body,tags}= req.body;
+    // if (!isValidBody(data)) return res.status(400).send({ status: false, msg: "please provide data to Create" })
+    let { authorId, body, title, tags, category, subcategory } = requestBody
 
     if (!title) return res.status(400).send("title Is required");
     if (!isValid(title)) return res.status(400).send({ status: false, Error: "title is Invalid" })
@@ -32,9 +44,10 @@ let createBlog = async function (req, res) {
     if (Title) return res.status(400).send({ status: false, msg: "Title has been already used please choose diffrent" })
 
     if (!isValid(authorId)) return res.status(400).send("Please provide Author Id");
+    if(!isValidAuthorId(authorId)) return res.status(400).send({status:false,msg:`${authorId} is not valid authorId`})
 
-    let authorData = await authorModel.findById(authorId);
-    if (!authorData) return res.status(404).send("Author Id not found!");
+    // let authorData = await authorModel.findById(authorId);
+    // if (!authorData) return res.status(404).send("Author Id not found!");
 
 
     if (!body) return res.status(400).send("please write somthing in body");
@@ -49,7 +62,7 @@ let createBlog = async function (req, res) {
     if (!subcategory) return res.status(400).send("subcategory Is required");
 
 
-    let savedData = await blogModel.create(data);
+    let savedData = await blogModel.create(requestBody);
     res.status(201).send({ status: true, data: savedData });
   } catch (err) {
     res.status(500).send({ status: false, msg: err.message });
@@ -74,42 +87,36 @@ let getBlog = async function (req, res) {
 
 // ==+==+==+==+==+==+==+==+==+==[Update Blogs]==+==+==+==+==+==+==+==+==+==
 
-let updateblogs = async (req, res) => {
+
+const updateblogs = async function (req, res) {
   try {
-    let blogsId = req.params.blogId;
-    if (!blogsId) return res.status(400).send("Blog Id Is requaired");
-
-    // -----------------check blog id is valid or not
-    let blogData = await blogModel.findById(blogsId);
-    if (!blogData) return res.status(404).send("Invalid blog Id");
-
-    // ------------check isDeleted = false
-    if (blogData.isDeleted === true)
-      return res
-        .status(404)
-        .send({ status: false, msg: "blog is not published" });
-
     let data = req.body;
-    console.log(data)
-    if (!isValidBody(data)) return res.status(400).send({ status: false, msg: "please provide data to update" })
-    let updatedBlog = await blogModel.findOneAndUpdate({ _id: blogsId }, data, {
-      new: true,
-    });
+    let blogId = req.params.blogId;
 
-    if (updatedBlog.isPublished == false) {
-      res.status(200).send({ status: true, data: updatedBlog });
-    } else {
-      updatedBlog.publishedAt = Date();
-      res.status(200).send({ status: true, data: updatedBlog });
-    }
+    // if (!valid(data.isPublished))
+    // return res.status(400).send({ status: false, msg: "isPublished Value should be true or false only" })
+
+    if (!Object.keys(data).length) return res.status(400).send({ status: false, msg: "input can't be empty" });
+
+    let checkBlog = await blogModel.findById(blogId);
+  
+    if (!checkBlog)
+      return res.status(404).send({ status: false, msg: "Blog Not Found" });
+
+    if (checkBlog.isDeleted == true)
+      return res.status(400).send({ status: false, msg: "This blog is already Deleted" });
+
+    let update = await blogModel.findByIdAndUpdate(blogId, { $push: { tags: data.tags, subcategory: data.subcategory }, title: data.title, body: data.body, isPublished: data.isPublished, publishedAt: Date() }, { new: true });
+
+    res.status(200).send({ status: true, data: update });
   } catch (err) {
-    res.status(500).send({ status: false, msg: err.message });
+    res.status(500).send({ error: err.message });
   }
 };
 
 // ==+==+==+==+==+==+==+==+==+==[ Delete Blogs By Id ]==+==+==+==+==+==+==+==+==+==
 
-let deleteApi = async (req, res) => {
+let deleteBlog = async (req, res) => {
   try {
     let blogId = req.params.blogId;
 
@@ -133,7 +140,7 @@ let deleteApi = async (req, res) => {
 
 // ==+==+==+==+==+==+==+==+==+==[ Delete Blogs By Query ]==+==+==+==+==+==+==+==+==+==
 
-let deleteByParam = async (req, res) => {
+let deleteByQuery = async (req, res) => {
   try {
     let data = req.query;
     if (!isValidBody(data)) return res.status(400).send({ status: false, error: " please provide data inside query" })
@@ -161,5 +168,5 @@ let deleteByParam = async (req, res) => {
 module.exports.createBlog = createBlog;
 module.exports.getBlog = getBlog;
 module.exports.updateblogs = updateblogs;
-module.exports.deleteApi = deleteApi;
-module.exports.deleteByParam = deleteByParam;
+module.exports.deleteBlog = deleteBlog;
+module.exports.deleteByQuery = deleteByQuery;

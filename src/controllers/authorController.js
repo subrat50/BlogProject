@@ -14,13 +14,19 @@ const isValid = function (value) {
 const isValidTitle = function (title) {
   return ["Mr", "Mrs", "Miss"].indexOf(title) !== -1
 }
+const isvalidRequest=function(requestBody){
+  return Object.keys(requestBody).length >0
+}
 
 // ==+==+==+==+==+==+==+==+==+==[Create Author]==+==+==+==+==+==+==+==+==+==
 
 const createAuthor = async function (req, res) {
     try {
-        let author = req.body
-        let { fname, lname, title, email, password } = author
+      const requestBody=req.body
+      if(!isvalidRequest(requestBody)){
+        return res.status(400).send({status:false,msg:"invalid request parameter ,please provied author detail"})
+      }
+        let { fname, lname, title, email, password } = requestBody
 
         if (!isValid(fname)) return res.status(400).send({ status: false, msg: "fname is Required" })
 
@@ -31,15 +37,17 @@ const createAuthor = async function (req, res) {
         if (!isValidTitle(title)) return res.status(400).send({ status: false, msg: "title is not as per requirement" })
 
         if (!isValid(password)) return res.status(400).send({ status: false, msg: "password is Required" })
+        if (!isValid(email)) return res.status(400).send({ status: false, msg: "email is Required" })
+        
 
         if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email))) return res.status(400).send({ status: false, msg: "email Id is Invalid" })
 
         let Email = await authorModel.findOne( {email} )
 
         if (Email) return res.status(400).send({ status: false, msg: "email is already used" })
-
-        if (author) {
-            let authorCreated = await authorModel.create(author)
+      //validation end
+        if (requestBody) {
+            let authorCreated = await authorModel.create(requestBody)
             res.status(201).send({ status: true, data: authorCreated, msg: "author successfully created" })
         } else res.send(400).send({ status: false,  msg: "bad request" })
     }
@@ -54,20 +62,21 @@ const createAuthor = async function (req, res) {
 
 const loginAuthor = async function (req, res) {
     try {
-      let data = req.body
-      let { email, password } = data
+      const requestBody=req.body
+      if(!isvalidRequest(requestBody)){
+        return res.status(400).send({status:false,msg:"invalid request parameter ,please provied author detail"})
+      }
+  
+      let { email, password } = requestBody
 
-      if (!email) return res.status(400).send({ status: false, msg: "Please provide email" })
+      if (!isValid(email)) return res.status(400).send({ status: false, msg: "email is required" })
 
         if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email))) return res.status(400).send({ status: false, msg: "email Id is invalid" })
+        if(!isValid(password)) return res.status(400).send({status:false,msg:"password is required"})
+        
+        let author = await authorModel.findOne({email,password});
 
-        let Email = await authorModel.findOne({ email })
-
-        if (!Email) return res.status(400).send({ status: false, msg: "email is not correct" })
-
-        let author = await authorModel.findOne({email: email,password: password});
-
-        if (!author)return res.status(401).send({status: false,msg: "password is not corerct"});
+        if (!author)return res.status(401).send({status: false,msg: "invalid login crefential"});
 
       // ---------[Create Token JWT]---------
       let token = jwt.sign(
@@ -81,7 +90,7 @@ const loginAuthor = async function (req, res) {
       res.setHeader("x-api-key", token);
       res.status(201).send({ status: true, token: token , msg: "Login Successfully"});
     } catch (err) {
-      res.send({ msg: "error", err: err.message });
+      res.status(500).send({ msg: "error", err: err.message });
     }
   };
 // ==+==+==+==+==+==+==+==+==+==[Exports]==+==+==+==+==+==+==+==+==+==

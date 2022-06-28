@@ -10,7 +10,9 @@ const isValid = function (value) {
     if (typeof value === "string")
     return true;
 };
-
+const isValidBody = function (body) {
+  return Object.keys(body).length > 0
+}
 const isValidTitle = function (title) {
   return ["Mr", "Mrs", "Miss"].indexOf(title) !== -1
 }
@@ -20,6 +22,8 @@ const isValidTitle = function (title) {
 const createAuthor = async function (req, res) {
     try {
         let author = req.body
+        if (!isValidBody(author)) return res.status(400).send({ status: false, msg: "please provide data to Create" })
+
         let { fname, lname, title, email, password } = author
 
         if (!isValid(fname)) return res.status(400).send({ status: false, msg: "fname is Required" })
@@ -32,11 +36,13 @@ const createAuthor = async function (req, res) {
 
         if (!isValid(password)) return res.status(400).send({ status: false, msg: "password is Required" })
 
+        if (!isValid(email)) return res.status(400).send({ status: false, msg: "email is Required" })
+
         if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) return res.status(400).send({ status: false, msg: "email Id is Invalid" })
 
         let Email = await authorModel.findOne( {email} )
 
-        if (Email) return res.status(400).send({ status: false, msg: email + "email is already used" })
+        if (Email) return res.status(400).send({ status: false, msg: email + " email is already used" })
 
         if (author) {
             let authorCreated = await authorModel.create(author)
@@ -45,7 +51,7 @@ const createAuthor = async function (req, res) {
     }
     catch (error) {
         console.log("Server Error:", error.message)
-        res.status(500).send({ status: false, error: error.message })
+        res.status(500).send({ status: false, msg: error.message })
     }
 }
 
@@ -55,6 +61,8 @@ const createAuthor = async function (req, res) {
 const loginAuthor = async function (req, res) {
     try {
       let data = req.body
+      if (!isValidBody(data)) return res.status(400).send({ status: false, msg: "please provide data to login" })
+
       let { email, password } = data
 
       if (!email) return res.status(400).send({ status: false, msg: "Please provide email" })
@@ -63,7 +71,7 @@ const loginAuthor = async function (req, res) {
 
         let Email = await authorModel.findOne({ email })
 
-        if (!Email) return res.status(400).send({ status: false, msg: "email is not correct" })
+        if (!Email) return res.status(404).send({ status: false, msg: "email is not correct" })
 
         let author = await authorModel.findOne({email: email,password: password});
 

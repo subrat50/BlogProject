@@ -19,6 +19,7 @@ const authenticate = async (req, res, next) => {
         })
 
         if (!decodedToken) return res.status(403).send({ status: false, msg: "token is invalid", });
+        req["authorId"]= decodedToken.authorId
     }
     catch (err) {
         res.status(500).send({ msg: "Error", error: err.message });

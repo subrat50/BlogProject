@@ -33,4 +33,4 @@ const authenticate = async (req, res, next) => {
 
 module.exports.authenticate = authenticate;
 module.exports.auth2 = auth2;
-module.exports.authorise = authorise;
+module.exports.authorise = authorise

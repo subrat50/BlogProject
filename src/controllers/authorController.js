@@ -16,6 +16,9 @@ const isValidBody = function (body) {
 const isValidTitle = function (title) {
   return ["Mr", "Mrs", "Miss"].indexOf(title) !== -1
 }
+const isvalidRequest=function(requestBody){
+  return Object.keys(requestBody).length >0
+}
 
 // ==+==+==+==+==+==+==+==+==+==[Create Author]==+==+==+==+==+==+==+==+==+==
 
@@ -35,6 +38,8 @@ const createAuthor = async function (req, res) {
         if (!isValidTitle(title)) return res.status(400).send({ status: false, msg: "title is not as per requirement" })
 
         if (!isValid(password)) return res.status(400).send({ status: false, msg: "password is Required" })
+        if (!isValid(email)) return res.status(400).send({ status: false, msg: "email is Required" })
+        
 
         if (!isValid(email)) return res.status(400).send({ status: false, msg: "email is Required" })
 
@@ -65,9 +70,12 @@ const loginAuthor = async function (req, res) {
 
       let { email, password } = data
 
-      if (!email) return res.status(400).send({ status: false, msg: "Please provide email" })
+      if (!isValid(email)) return res.status(400).send({ status: false, msg: "email is required" })
 
-        if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) return res.status(400).send({ status: false, msg: "email Id is invalid" })
+        if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email))) return res.status(400).send({ status: false, msg: "email Id is invalid" })
+        if(!isValid(password)) return res.status(400).send({status:false,msg:"password is required"})
+        
+     
 
         let Email = await authorModel.findOne({ email })
 

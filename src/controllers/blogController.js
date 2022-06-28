@@ -2,6 +2,7 @@
 
 const blogModel = require("../models/blogModel");
 const authorModel = require("../models/authorModel");
+const { default: mongoose, isValidObjectId } = require("mongoose");
 
 // ==+==+==+==[Validation Functions]==+==+==+==+=
 
@@ -12,8 +13,8 @@ const isValid = function (value) {
     return true;
 };
 
-const isValidBody = function (body) {
-  return Object.keys(body).length > 0
+const isvalidRequest=function(requestBody){
+  return Object.keys(requestBody).length >0
 }
 
 const isValidAuthorId=function(ObjectId){
@@ -49,6 +50,8 @@ let createBlog = async function (req, res) {
     const token = req.authorId
     if (token !== data.authorId) res.status(401).send({ status: false, msg: "unauthorised! User logged is not allowed" });
 
+if (!isValid(authorId)) return res.status(400).send("Please provide Author Id");
+    if(!isValidAuthorId(authorId)) return res.status(400).send({status:false,msg:`${authorId} is not valid authorId`})
 
     if (!body) return res.status(400).send("please write somthing in body");
     if (!isValid(body)) return res.status(400).send({ status: false, msg: "body cannot be number" })
@@ -63,7 +66,7 @@ let createBlog = async function (req, res) {
     if(data.isPublished==true) {$set:{data.publishedAt = new Date()}}
 
 
-    let savedData = await blogModel.create(data);
+    let savedData = await blogModel.create(requestBody);
     res.status(201).send({ status: true, data: savedData });
   } catch (err) {
     res.status(500).send({ status: false, msg: err.message });

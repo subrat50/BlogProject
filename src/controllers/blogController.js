@@ -56,8 +56,12 @@ if (!isValid(authorId)) return res.status(400).send("Please provide Author Id");
     if (!isValid(category)) return res.status(400).send({ status: false, Error: "Category is Invalid" })
 
     if (!subcategory) return res.status(400).send({status: false, msg:"subcategory Is required"});
+    
+    const token = req.authorId
+    if (token !== checkBlog.authorId.toString()) res.status(401).send({ status: false, msg: "unauthorised" });
 
 
+    
     let savedData = await blogModel.create(requestBody);
     res.status(201).send({ status: true, data: savedData });
   } catch (err) {

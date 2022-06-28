@@ -10,23 +10,21 @@ const isValid = function (value) {
     if (typeof value === "string")
     return true;
 };
-
+const isValidBody = function (body) {
+  return Object.keys(body).length > 0
+}
 const isValidTitle = function (title) {
   return ["Mr", "Mrs", "Miss"].indexOf(title) !== -1
-}
-const isvalidRequest=function(requestBody){
-  return Object.keys(requestBody).length >0
 }
 
 // ==+==+==+==+==+==+==+==+==+==[Create Author]==+==+==+==+==+==+==+==+==+==
 
 const createAuthor = async function (req, res) {
     try {
-      const requestBody=req.body
-      if(!isvalidRequest(requestBody)){
-        return res.status(400).send({status:false,msg:"invalid request parameter ,please provied author detail"})
-      }
-        let { fname, lname, title, email, password } = requestBody
+        let author = req.body
+        if (!isValidBody(author)) return res.status(400).send({ status: false, msg: "please provide data to Create" })
+
+        let { fname, lname, title, email, password } = author
 
         if (!isValid(fname)) return res.status(400).send({ status: false, msg: "fname is Required" })
 
@@ -40,20 +38,22 @@ const createAuthor = async function (req, res) {
         if (!isValid(email)) return res.status(400).send({ status: false, msg: "email is Required" })
         
 
-        if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email))) return res.status(400).send({ status: false, msg: "email Id is Invalid" })
+       // if (!isValid(email)) return res.status(400).send({ status: false, msg: "email is Required" })
+
+        if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) return res.status(400).send({ status: false, msg: "email Id is Invalid" })
 
         let Email = await authorModel.findOne( {email} )
 
-        if (Email) return res.status(400).send({ status: false, msg: "email is already used" })
-      //validation end
-        if (requestBody) {
-            let authorCreated = await authorModel.create(requestBody)
+        if (Email) return res.status(400).send({ status: false, msg: email + " email is already used" })
+
+        if (author) {
+            let authorCreated = await authorModel.create(author)
             res.status(201).send({ status: true, data: authorCreated, msg: "author successfully created" })
         } else res.send(400).send({ status: false,  msg: "bad request" })
     }
     catch (error) {
         console.log("Server Error:", error.message)
-        res.status(500).send({ msg: "Server Error", error: error.message })
+        res.status(500).send({ status: false, msg: error.message })
     }
 }
 
@@ -62,21 +62,25 @@ const createAuthor = async function (req, res) {
 
 const loginAuthor = async function (req, res) {
     try {
-      const requestBody=req.body
-      if(!isvalidRequest(requestBody)){
-        return res.status(400).send({status:false,msg:"invalid request parameter ,please provied author detail"})
-      }
-  
-      let { email, password } = requestBody
+      let data = req.body
+      if (!isValidBody(data)) return res.status(400).send({ status: false, msg: "please provide data to login" })
+
+      let { email, password } = data
 
       if (!isValid(email)) return res.status(400).send({ status: false, msg: "email is required" })
 
         if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email))) return res.status(400).send({ status: false, msg: "email Id is invalid" })
         if(!isValid(password)) return res.status(400).send({status:false,msg:"password is required"})
         
-        let author = await authorModel.findOne({email,password});
+     
 
-        if (!author)return res.status(401).send({status: false,msg: "invalid login crefential"});
+        let Email = await authorModel.findOne({ email })
+
+        if (!Email) return res.status(404).send({ status: false, msg: "email is not correct" })
+
+        let author = await authorModel.findOne({email: email,password: password});
+
+        if (!author)return res.status(401).send({status: false,msg: "password is not corerct"});
 
       // ---------[Create Token JWT]---------
       let token = jwt.sign(
